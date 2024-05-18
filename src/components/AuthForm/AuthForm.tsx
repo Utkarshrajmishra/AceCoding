@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import InputField from "../InputComponent/InputField";
 import { Button } from "@/components/ui/button";
 import {
@@ -8,6 +9,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+
 interface AuthFormProps {
   type: string;
 }
@@ -15,6 +17,26 @@ interface AuthFormProps {
 const AuthForm: React.FC<AuthFormProps> = ({
   type = "Login",
 }: AuthFormProps) => {
+  const nameRef = useRef<HTMLInputElement>(null);
+  const emailRef = useRef<HTMLInputElement>(null);
+  const passwordRef = useRef<HTMLInputElement>(null);
+
+
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+  
+    const name = type === "Signup" ? nameRef.current?.value ?? "" : "";
+    const email = emailRef.current?.value;
+    const password = passwordRef.current?.value;
+
+    console.log("Name:", name);
+    console.log("Email:", email);
+    console.log("Password:", password);
+ 
+  };
+
+  
+
   return (
     <>
       <Dialog>
@@ -27,13 +49,17 @@ const AuthForm: React.FC<AuthFormProps> = ({
               {type} to your Account
             </DialogTitle>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
-            {type == "Signup" ? (
+          <div className="grid gap-2 py-4">
+            {type === "Signup" ? (
               <div className="flex flex-col gap-2">
                 <Label htmlFor="name" className="text-left">
                   Name
                 </Label>
-                <InputField type="name" placeholder="Input your name" />
+                <InputField
+                  type="name"
+                  ref={nameRef}
+                  placeholder="Input your name"
+                />
               </div>
             ) : (
               ""
@@ -42,17 +68,27 @@ const AuthForm: React.FC<AuthFormProps> = ({
               <Label htmlFor="name" className="text-left">
                 Email
               </Label>
-              <InputField type="email" placeholder="Input your email" />
+              <InputField
+                type="email"
+                ref={emailRef}
+                placeholder="Input your email"
+              />
             </div>
             <div className="flex flex-col gap-2">
               <Label htmlFor="username" className="text-left">
                 Password
               </Label>
-              <InputField type="password" placeholder="Input your password" />
+              <InputField
+                type="password"
+                ref={passwordRef}
+                placeholder="Input your password"
+              />
             </div>
           </div>
 
-          <Button type="submit">{type}</Button>
+          <Button type="submit" onClick={handleSubmit}>
+            {type}
+          </Button>
         </DialogContent>
       </Dialog>
     </>
