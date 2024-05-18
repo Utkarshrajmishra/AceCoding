@@ -1,6 +1,7 @@
-import { useRef } from "react";
 import InputField from "../InputComponent/InputField";
 import { Button } from "@/components/ui/button";
+import { AuthSchema } from "@/zodSchema/AuthSchema";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Dialog,
   DialogContent,
@@ -9,6 +10,13 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { useForm } from "react-hook-form";
+
+interface AuthFormData {
+  name?: string;
+  email: string;
+  password: string;
+}
 
 interface AuthFormProps {
   type: string;
@@ -17,25 +25,25 @@ interface AuthFormProps {
 const AuthForm: React.FC<AuthFormProps> = ({
   type = "Login",
 }: AuthFormProps) => {
-  const nameRef = useRef<HTMLInputElement>(null);
-  const emailRef = useRef<HTMLInputElement>(null);
-  const passwordRef = useRef<HTMLInputElement>(null);
-
-
-  const handleSubmit = (event: React.FormEvent) => {
-    event.preventDefault();
   
-    const name = type === "Signup" ? nameRef.current?.value ?? "" : "";
-    const email = emailRef.current?.value;
-    const password = passwordRef.current?.value;
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<AuthFormData>({
+    resolver: zodResolver(AuthSchema),
+  });
 
-    console.log("Name:", name);
-    console.log("Email:", email);
-    console.log("Password:", password);
- 
+  const onSubmit = (data: object) => {
+    console.log(data);
   };
 
-  
+  const getErrorMessage = (error: any) => {
+    if (error) {
+      return typeof error.message === "string" ? error.message : null;
+    }
+    return null;
+  };
 
   return (
     <>
@@ -49,46 +57,70 @@ const AuthForm: React.FC<AuthFormProps> = ({
               {type} to your Account
             </DialogTitle>
           </DialogHeader>
-          <div className="grid gap-2 py-4">
-            {type === "Signup" ? (
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <div className="grid gap-2 py-4">
+              {type === "Signup" ? (
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="name" className="text-left">
+                    Name
+                  </Label>
+                  <div>
+                    <InputField
+                      type="name"
+                      placeholder="Input your name"
+                      {...register("name")}
+                    />
+                    {errors.name && (
+                      <span className="text-red-600 text-sm">
+                        {getErrorMessage(errors.name)}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                ""
+              )}
               <div className="flex flex-col gap-2">
                 <Label htmlFor="name" className="text-left">
-                  Name
+                  Email
                 </Label>
-                <InputField
-                  type="name"
-                  ref={nameRef}
-                  placeholder="Input your name"
-                />
+                <div>
+                  <InputField
+                    type="email"
+                    {...register("email")}
+                    placeholder="Input your email"
+                  />
+                  {errors.email && (
+                    <span className="text-red-600 text-sm">
+                      {getErrorMessage(errors.email)}
+                    </span>
+                  )}
+                </div>
               </div>
-            ) : (
-              ""
-            )}
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="name" className="text-left">
-                Email
-              </Label>
-              <InputField
-                type="email"
-                ref={emailRef}
-                placeholder="Input your email"
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="username" className="text-left">
-                Password
-              </Label>
-              <InputField
-                type="password"
-                ref={passwordRef}
-                placeholder="Input your password"
-              />
-            </div>
-          </div>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="username" className="text-left">
+                  Password
+                </Label>
+                <div>
+                  <InputField
+                    type="password"
+                    {...register("password")}
+                    placeholder="Input your password"
+                  />
 
-          <Button type="submit" onClick={handleSubmit}>
-            {type}
-          </Button>
+                  {errors.password && (
+                    <span className="text-red-600 text-sm">
+                      {getErrorMessage(errors.password)}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <Button type="submit" className="w-full">
+              {type}
+            </Button>
+          </form>
         </DialogContent>
       </Dialog>
     </>
