@@ -3,15 +3,18 @@ import { createUserWithEmailAndPassword } from "firebase/auth";
 
 class Auth{
 
-    async registerUser(email:string, password:string)
+    async registerUser(name:string,email:string, password:string)
     {
-        await createUserWithEmailAndPassword(authRef,email,password)
-        .then((user)=>{
-            if(user) return {User:user,status:true}
-        })
-        .catch((error)=>{
-            return {User:error, status:false};
-        })
+        try {
+          const userCredential = await createUserWithEmailAndPassword(
+            authRef,
+            email,
+            password
+          );
+          return { User: userCredential.user, status: true };
+        } catch (error) {
+          return { User: error, status: false };
+        }
     }
 }
 

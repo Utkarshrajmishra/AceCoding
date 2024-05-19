@@ -11,6 +11,9 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { useForm } from "react-hook-form";
+import toast, { Toaster } from "react-hot-toast";
+import AuthService from "@/FirebaseServices/Auth";
+import { useState } from "react";
 
 interface AuthFormData {
   name?: string;
@@ -25,7 +28,9 @@ interface AuthFormProps {
 const AuthForm: React.FC<AuthFormProps> = ({
   type = "Login",
 }: AuthFormProps) => {
-  
+  const [loading, setLoading] = useState(false);
+  const [isOpen, setDialogOpen] = useState(false);
+
   const {
     register,
     handleSubmit,
@@ -34,8 +39,12 @@ const AuthForm: React.FC<AuthFormProps> = ({
     resolver: zodResolver(AuthSchema),
   });
 
-  const onSubmit = (data: object) => {
-    console.log(data);
+  const onSubmit = (data: any) => {
+    if (type == "Signup" && data) {
+      registerUser(data.name, data.email, data.password);
+    } else {
+      loginUser();
+    }
   };
 
   const getErrorMessage = (error: any) => {
@@ -45,11 +54,35 @@ const AuthForm: React.FC<AuthFormProps> = ({
     return null;
   };
 
+  const registerUser = async (
+    name: string,
+    email: string,
+    password: string
+  ) => {
+    setLoading(true);
+    const user = await AuthService.registerUser(name, email, password);
+    if (user.status) {
+      setLoading(false);
+      SuccessToast("Account created successfully");
+      setDialogOpen(false);
+    } else {
+      setLoading(false);
+      ErrorToast(`Error: ${user.User}`);
+    }
+  };
+
+  const loginUser = () => {};
+
+  const SuccessToast = (message: string) => toast.success(message);
+  const ErrorToast = (message: string) => toast.error(message);
+
   return (
     <>
-      <Dialog>
+      <Dialog open={isOpen} onOpenChange={setDialogOpen}>
         <DialogTrigger asChild>
-          <Button variant="outline">{type}</Button>
+          <Button variant="outline" onClick={() => setDialogOpen(true)}>
+            {type}
+          </Button>
         </DialogTrigger>
         <DialogContent className="sm:max-w-[380px]">
           <DialogHeader>
@@ -118,11 +151,12 @@ const AuthForm: React.FC<AuthFormProps> = ({
             </div>
 
             <Button type="submit" className="w-full">
-              {type}
+              {loading ? "Processing..." : type}
             </Button>
           </form>
         </DialogContent>
       </Dialog>
+      <Toaster />
     </>
   );
 };
