@@ -2,6 +2,7 @@ import InputField from "../InputComponent/InputField";
 import { Button } from "@/components/ui/button";
 import { AuthSchema } from "@/zodSchema/AuthSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Input } from "../ui/input";
 import {
   Dialog,
   DialogContent,
@@ -31,6 +32,9 @@ const AuthForm: React.FC<AuthFormProps> = ({
 }: AuthFormProps) => {
   const [loading, setLoading] = useState(false);
   const [isOpen, setDialogOpen] = useState(false);
+  const [image,setImage]=useState<File>()
+  const [imageName,setImageName]=useState("");
+  const [imageError,setImageError]=useState(false)
 
   const UserStatus = useAuthStore((state) => state.isLogin);
   const changeAuthState = useAuthStore((state) => state.changeAuthState);
@@ -44,7 +48,8 @@ const AuthForm: React.FC<AuthFormProps> = ({
   });
 
   const onSubmit: SubmitHandler<AuthFormData> = (data: any) => {
-    console.log(data);
+    if(!imageName) return setImageError(true)
+      setImageError(false);
     if (type === "Signup" && data) {
       registerUser(data.name, data.email, data.password);
     } else if (type === "Login") {
@@ -166,6 +171,34 @@ const AuthForm: React.FC<AuthFormProps> = ({
                   )}
                 </div>
               </div>
+              {type === "Signup" ? (
+                <div>
+                  <Label htmlFor="file" className="text-left">
+                    Profile Image
+                  </Label>
+                  <div>
+                    <Input
+                      type="file"
+                      id="file"
+                      onChange={(e) => {
+                        if (e.target.files && e.target.files[0]) {
+                          setImage(e.target.files[0]);
+                          setImageName(e.target.files[0].name);
+                        }
+                      }}
+                      accept="image/png,image/jpeg"
+                      placeholder="Profile Image"
+                    />
+                    {imageError && (
+                      <span className="text-red-600 text-sm">
+                        Profile Image is required
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                ""
+              )}
             </div>
 
             <Button type="submit" className="w-full">
