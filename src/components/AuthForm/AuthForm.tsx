@@ -10,10 +10,11 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { useForm } from "react-hook-form";
+import { useForm, SubmitHandler } from "react-hook-form";
 import toast, { Toaster } from "react-hot-toast";
 import AuthService from "@/FirebaseServices/Auth";
 import { useState } from "react";
+import { useAuthStore } from "@/store/AuthStore";
 
 interface AuthFormData {
   name?: string;
@@ -22,7 +23,7 @@ interface AuthFormData {
 }
 
 interface AuthFormProps {
-  type: string;
+  type: "Login" | "Signup";
 }
 
 const AuthForm: React.FC<AuthFormProps> = ({
@@ -30,6 +31,9 @@ const AuthForm: React.FC<AuthFormProps> = ({
 }: AuthFormProps) => {
   const [loading, setLoading] = useState(false);
   const [isOpen, setDialogOpen] = useState(false);
+
+  const UserStatus = useAuthStore((state) => state.isLogin);
+  const changeAuthState = useAuthStore((state) => state.changeAuthState);
 
   const {
     register,
@@ -39,11 +43,12 @@ const AuthForm: React.FC<AuthFormProps> = ({
     resolver: zodResolver(AuthSchema),
   });
 
-  const onSubmit = (data: any) => {
-    if (type == "Signup" && data) {
+  const onSubmit: SubmitHandler<AuthFormData> = (data: any) => {
+    console.log(data);
+    if (type === "Signup" && data) {
       registerUser(data.name, data.email, data.password);
-    } else {
-      loginUser();
+    } else if (type === "Login") {
+      loginUser(data.email, data.password);
     }
   };
 
@@ -71,7 +76,20 @@ const AuthForm: React.FC<AuthFormProps> = ({
     }
   };
 
-  const loginUser = () => {};
+  const loginUser = async (email: string, password: string) => {
+    setLoading(true);
+    const user = await AuthService.loginUser(email, password);
+    if (user.status) {
+      changeAuthState();
+      setLoading(false);
+      SuccessToast("Account created successfully");
+      setDialogOpen(false);
+    } else {
+      setLoading(false);
+      ErrorToast(`Error: ${user.User}`);
+    }
+    console.log(UserStatus);
+  };
 
   const SuccessToast = (message: string) => toast.success(message);
   const ErrorToast = (message: string) => toast.error(message);
@@ -99,7 +117,7 @@ const AuthForm: React.FC<AuthFormProps> = ({
                   </Label>
                   <div>
                     <InputField
-                      type="name"
+                      type="text"
                       placeholder="Input your name"
                       {...register("name")}
                     />
