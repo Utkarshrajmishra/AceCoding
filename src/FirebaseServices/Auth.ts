@@ -5,7 +5,7 @@ import {
 } from "firebase/auth";
 
 class Auth {
-  async registerUser(name: string, email: string, password: string) {
+  async registerUser(email: string, password: string) {
     try {
       const userCredential = await createUserWithEmailAndPassword(
         authRef,

@@ -16,7 +16,7 @@ import toast, { Toaster } from "react-hot-toast";
 import AuthService from "@/FirebaseServices/Auth";
 import { useState } from "react";
 import { useAuthStore } from "@/store/AuthStore";
-
+import DBService from "@/FirebaseServices/DB";
 interface AuthFormData {
   name?: string;
   email: string;
@@ -32,9 +32,9 @@ const AuthForm: React.FC<AuthFormProps> = ({
 }: AuthFormProps) => {
   const [loading, setLoading] = useState(false);
   const [isOpen, setDialogOpen] = useState(false);
-  const [image,setImage]=useState<File>()
-  const [imageName,setImageName]=useState("");
-  const [imageError,setImageError]=useState(false)
+  const [image, setImage] = useState<File>();
+  const [imageName, setImageName] = useState("");
+  const [imageError, setImageError] = useState(false);
 
   const UserStatus = useAuthStore((state) => state.isLogin);
   const changeAuthState = useAuthStore((state) => state.changeAuthState);
@@ -48,8 +48,8 @@ const AuthForm: React.FC<AuthFormProps> = ({
   });
 
   const onSubmit: SubmitHandler<AuthFormData> = (data: any) => {
-    if(!imageName) return setImageError(true)
-      setImageError(false);
+    if (!imageName) return setImageError(true);
+    setImageError(false);
     if (type === "Signup" && data) {
       registerUser(data.name, data.email, data.password);
     } else if (type === "Login") {
@@ -70,11 +70,18 @@ const AuthForm: React.FC<AuthFormProps> = ({
     password: string
   ) => {
     setLoading(true);
-    const user = await AuthService.registerUser(name, email, password);
-    if (user.status) {
-      setLoading(false);
-      SuccessToast("Account created successfully");
-      setDialogOpen(false);
+    const user = await AuthService.registerUser(email, password);
+    if (user.status && image) {
+      const db = await DBService.UploadImage(image, imageName, email,name);
+      if (db?.status) {
+        setLoading(false);
+        SuccessToast("Account created successfully");
+        setDialogOpen(false);
+      }
+      else{
+        setLoading(false);
+        ErrorToast(`Error: ${db?.storage}`)
+      }
     } else {
       setLoading(false);
       ErrorToast(`Error: ${user.User}`);
