@@ -1,5 +1,6 @@
 import { databaseRef, storageRef } from "@/Firebase";
 import { doc, setDoc } from "firebase/firestore";
+
 import { getDownloadURL, uploadBytes, ref } from "firebase/storage";
 class DB {
   async UploadImage(
@@ -45,6 +46,7 @@ class DB {
       return { storage: error, status: false };
     }
   }
+
 
   generateNext30DaysObject(): Record<string, boolean> {
     const result: Record<string, boolean> = {};

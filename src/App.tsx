@@ -1,12 +1,11 @@
 import './App.css'
-import AuthForm from './components/AuthForm/AuthForm';
+import ProblemList from './components/ProblemList/ProblemList';
 function App() {
  
 
   return (
     <>
-      <AuthForm type="Login" />
-      <AuthForm type="Signup" />
+      <ProblemList/>
     </>
   );
 }
